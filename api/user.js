@@ -22,6 +22,42 @@ router.get('/list', function (req, res, next) {
         }
     })
 });
+// 获取用户信息
+router.get('/userinfo', function (req, res, next) {
+    const { user_id } = req.cookies;
+    console.log( user_id );
+    if (!user_id) {
+        return res.json({
+            status: '0',
+            msg: '用户未登录',
+            result: {
+                is_login: false
+            }
+        })
+    }
+    User.findOne({ _id: user_id }, function (err, doc) {
+        if (err) {
+            res.json({
+                status: '1',
+                msg: err.message
+            })
+        } else {
+            res.cookie('user_id', doc._id);
+            let result = {
+                _id: doc._id,
+                user_name: doc.user_name,
+                __v: doc.__v,
+                is_login: true
+            }
+            return res.json({
+                status: '0',
+                msg: '已登录',
+                result: result
+            })
+        }
+
+    })
+});
 // 注册用户
 router.post('/regist', function (req, res, next) {
     const { user_name, user_pwd } = req.body;
@@ -30,7 +66,9 @@ router.post('/regist', function (req, res, next) {
             return res.json({
                 status: '0',
                 msg: '用户名重复',
-                result: {}
+                result: {
+                    regist_status:'faild'
+                }
             })
         }
         const userModel = new User({
@@ -45,11 +83,13 @@ router.post('/regist', function (req, res, next) {
                     result: {}
                 })
             }
-            res.cookie('user_id', doc._id);
             return res.json({
                 status: '0',
                 msg: '注册成功',
-                result: doc
+                result: {
+                    regist_status:'success',
+                    user_name:doc.user_name
+                }
             })
         })
     })
@@ -62,14 +102,22 @@ router.post('/login', function (req, res) {
             return res.json({
                 status: '0',
                 msg: '用户名或者密码错误',
-                result: {}
+                result: {
+                    login_suceess:false
+                }
             })
         }
-        res.cookie('user_id', doc._id)
+        res.cookie('user_id', doc._id);
+        let result = {
+            _id: doc._id,
+            user_name: doc.user_name,
+            __v: doc.__v,
+            login_suceess: true
+        }
         return res.json({
             status: '0',
             msg: '登陆成功',
-            result: doc
+            result: result
         })
     })
 })
@@ -79,7 +127,9 @@ router.post('/logout', function (req, res) {
     return res.json({
         status: '0',
         msg: '退出成功',
-        result: {}
+        result: {
+            is_login: false
+        }
     })
 })
 

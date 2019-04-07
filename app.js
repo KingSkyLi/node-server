@@ -5,13 +5,21 @@ var ejs = require('ejs');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
+var allowCrossDomain = function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Credentials','true');
+  next();
+};
+
 var indexRouter = require('./routes/index');
 // 人员接口
 var user = require('./api/user');
 
 var app = express();
-
-
+app.use(allowCrossDomain);
 // 连接数据库
 var mongoose = require('mongoose');
 
